@@ -31,6 +31,7 @@ def main():
 	#replace this if you're not austin
 	path = '/Users/austinpeterson/Documents/code/MercuryChallenge/jsonToSql/cu_gsr/'
 
+	counter = 0
 	#read each json file included in cu_gsr
 	for filename in os.listdir(path):
 
@@ -38,6 +39,8 @@ def main():
 
 		with open(temppath, "r") as read_file:
 			data = json.load(read_file)
+
+		print("===========================Now reading "+filename+"===========================")
 
 		sql_create_cu_gsr_event_table = """CREATE TABLE IF NOT EXISTS cu_gsr_event (
                                         Approximate_Location text,
@@ -61,7 +64,6 @@ def main():
                                         Revision_Date datetime,
                                         State text
                                 );"""
-
 
 		# create a database connection
 		conn = create_connection(database)
@@ -92,6 +94,8 @@ def main():
 			#make sure entry as datetime works in db
 
 		conn.commit()
+		counter = counter+1
+	print(str(counter)+" json files read from "+path)
 
 main()
 
