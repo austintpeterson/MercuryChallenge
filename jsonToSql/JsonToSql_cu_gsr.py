@@ -2,8 +2,6 @@
 #into a sql database for use later.  will try to format dates into 
 #sql datetime format for easy time-based queries.
 
-#hopefully all cu event warning will be inserted into the same db
-
 #created by Austin Peterson
 
 import json
@@ -11,14 +9,26 @@ import sqlite3
 import time
 import os
 
-# need time.strftime to conv json time to sql datetime
-#https://stackoverflow.com/questions/6119369/simple-datetime-sql-query
+def create_connection(db_file):
+    try:
+        conn = sqlite3.connect(db_file)
+        return conn
+    except Error as e:
+        print(e)
+ 
+    return None
 
-
-
+def execute_sql_comm(conn, sql_comm):
+    try:
+        c = conn.cursor()
+        c.execute(sql_comm)
+    except Error as e:
+        print(e)
 
 def main():
 
+	database = "cu_gsr.db"
+	#replace this if you're not austin
 	path = '/Users/austinpeterson/Documents/code/MercuryChallenge/jsonToSql/cu_gsr/'
 
 	#read each json file included in cu_gsr
@@ -29,49 +39,59 @@ def main():
 		with open(temppath, "r") as read_file:
 			data = json.load(read_file)
 
-		#print(data)
+		sql_create_cu_gsr_event_table = """CREATE TABLE IF NOT EXISTS cu_gsr_event (
+                                        Approximate_Location text,
+                                        City text,
+                                        Country text,
+                                        Crowd_Size,
+                                        Crowd_Size_Description text,
+                                        Earliest_Reported_Date text,
+                                        Encoding_Comment text,
+                                        Event_Date datetime,
+                                        Event_ID text,
+                                        Event_Type text,
+                                        First_Reported_Link text,
+                                        GSS_Link text,
+                                        Latitude text,
+                                        Longitude text,
+                                        News_Source text,
+                                        Other_Links text,
+                                        Population text,
+                                        Reason text,
+                                        Revision_Date datetime,
+                                        State text
+                                );"""
 
-		#json fields
 
-		#Approximate_Location (str)
-		#City (str)
-		#Country (str)
-		#Crowd_Size (str)
-		#Crowd_Size_Description (str)
-		#Earliest_Reported_Date (put in datetime format)
-		#Encoding_Comment (str)
-		#Event_Date (put in datetime format)
-		#Event_ID (str)
-		#Event_Type (str)
-		#First_Reported_Link (str)
-		#GSS_Link (str)
-		#Latitude (float/)
-		#Longitude (float/)
-		#News_Source (str)
-		#Other_Links (str, w/ newlines separating)
-		#Population (str)
-		#Reason (str)
-		#Revision_Date (put in datetime format)
-		#State (str)
-		#Revision_DTG (int?)
+		# create a database connection
+		conn = create_connection(database)
+		if conn is not None:
+			# create projects table
+			execute_sql_comm(conn, sql_create_cu_gsr_event_table)
+		else:
+			print("cannot create db connection.")
+
+		c = conn.cursor()
 
 		#parse json data into vars
-		for i in data:
-			print(i['City'])
-
+		for entry in data:
 			try:
-				Approximate_Location = i['Approximate_Location']
-				print(Approximate_Location)
-				
+				query = '(Approximate_Location, City, Country, Crowd_Size, Crowd_Size_Description,Earliest_Reported_Date,Encoding_Comment,Event_Date,Event_ID,Event_Type, \
+				First_Reported_Link,GSS_Link,Latitude,Longitude,News_Source,Other_Links,Population,Reason,Revision_Date,State)'
+
+				c.execute('INSERT INTO cu_gsr_event ' + query + ' VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', \
+				(entry['Approximate_Location'],entry['City'], entry['Country'], entry['Crowd_Size'], entry['Crowd_Size_Description'], \
+				entry['Earliest_Reported_Date'],entry['Encoding_Comment'], entry['Event_Date'], entry['Event_ID'], entry['Event_Type'], \
+				entry['First_Reported_Link'],entry['GSS_Link'], entry['Latitude'], entry['Longitude'], entry['News_Source'], \
+				entry['Other_Links'],entry['Population'], entry['Reason'], entry['Revision_Date'], entry['State']))
+
+				print("Event: "+entry['Event_ID']+" inserted into "+database)
 			except Error as e:
-				print(e)
+				print(entry['Event_ID']+" not successful. Error: "+e)
+			
+			#make sure entry as datetime works in db
 
-
-
-
-
-
-
+		conn.commit()
 
 main()
 
