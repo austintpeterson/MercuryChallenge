@@ -15,8 +15,6 @@ def create_connection(db_file):
         return conn
     except Error as e:
         print(e)
- 
-    return None
 
 def execute_sql_comm(conn, sql_comm):
     try:
@@ -27,7 +25,7 @@ def execute_sql_comm(conn, sql_comm):
 
 def main():
 
-	database = "cu_gsr.db"
+	database = "mercury.db"
 	#replace this if you're not austin
 	path = '/Users/austinpeterson/Documents/code/MercuryChallenge/jsonToSql/cu_gsr/'
 
