@@ -114,17 +114,6 @@ def clean_loaded_df(dirty_df):
 
 
 
-#testing
-load_tweets_xlsx("outputSmall")
-
-
-
-
-
-
-
-
-
 
 
 
