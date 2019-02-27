@@ -1,0 +1,4 @@
+This is the space for processsing scripts
+Things like nlp, sentiment analysis, etc.
+For use in the text processing after load and
+before ml routines.
