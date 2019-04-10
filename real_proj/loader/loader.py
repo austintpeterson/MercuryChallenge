@@ -81,7 +81,8 @@ def clean_loaded_df(dirty_df):
 	#'Number' column is kept for filtering keyword tag rows
 	new_df = dirty_df.drop('user',1)
 	new_df = new_df.drop('fullname',1)
-	new_df = new_df.drop('tweet-id',1)
+	#keeping tweet ID to resolve clusters
+	#new_df = new_df.drop('tweet-id',1)
 	new_df = new_df.drop('timestamp',1)
 	new_df = new_df.drop('url',1)
 	new_df = new_df.drop('likes',1)
@@ -96,6 +97,7 @@ def clean_loaded_df(dirty_df):
 	#filter rows here
 	#getting rid of "keyword tag" rows that aren't tweet/data rows
 	#these rows have nothing in 'text' column ('')
+	#DONE below
 	
 	#note: there is probably a better way to do this, but I struggled with 
 	#issues regarding how NaN and int values are read in from xlsx for a while
@@ -106,9 +108,7 @@ def clean_loaded_df(dirty_df):
 	#drop any rows that have numpy nan in text column
 	new_df.dropna(subset = ['text'], inplace=True)
 
-	print(new_df.shape)
-
-	print(new_df["Number"])
+	#print(new_df.shape)
 
 	return new_df
 

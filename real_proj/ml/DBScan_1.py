@@ -17,6 +17,7 @@ isri = ISRIStemmer()
 
 import os.path
 import sys
+import csv
 
 my_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(my_path, os.pardir))
@@ -30,13 +31,15 @@ import loader
 
 def main():
 	#target_xlsx = input("target xlsx (without file extension): ")
-	target_xlsx = "outputSmall"
+	target_xlsx = "outputSingle"
 
 	#todo: convert to list of strings ('text' column)
 	data_list = loader.load_tweets_xlsx(target_xlsx)
 
 	#converting 'text' column to list
 	text_list = data_list['text'].tolist()
+
+	#Need to work on loading all of the 
 
 	#process data here
 	proc_text_list = []
@@ -52,16 +55,16 @@ def main():
 	#using vectorizer to transform text
 	vectorizer = TfidfVectorizer()
 	X = vectorizer.fit_transform(proc_text_list)
+	
 
 	#can define custom distance metrics for DBScan
 	#check it out
 	#https://scikit-learn.org/stable/faq.html#how-do-i-deal-with-string-data-or-trees-graphs
 	#levenshtein is good for strings, currently using tfidf
 	#NOT CURRENTLY USED
-	def lev_metric(x, y):
-		i, j = int(x[0]), int(y[0])#extract indices
-		return levenshtein(data_list[i], data_list[j])
-
+	# def lev_metric(x, y):
+	# 	i, j = int(x[0]), int(y[0])#extract indices
+	# 	return levenshtein(data_list[i], data_list[j])
 
 	#create dbscan
 	#X = np.arange(len(data_list)).reshape(-1, 1)
@@ -73,8 +76,6 @@ def main():
 	#fit data to dbscan
 	#todo: build pipeline for vectorizer->dbscan workflow
 	db.fit(X)
-
-	#plotting
 
 	#get list of labels for group (-1 is noise)
 	labels = db.labels_
@@ -90,6 +91,52 @@ def main():
 	#coming out to 5713 (oh no)
 	print("# of data labelled as noise: "+str(n_noise))
 
+	#I got this from internet? use, fix or delete
+	#clusters = [X[labels == i] for i in xrange(n_clusters_)]
+
+	#Notes
+	#Need meaningful data that is more focused (focused keywords) to get good clusters
+	#Need to process punctuation to get rid of clustering based on punc alone
+	#Need to save out the clusters
+	#Odd formatting issues with tuple_array, figure it out
+	#Need to resolve labels to full tweet data retreived in data_list (with all info)
+	#Then I can build a CSV cluster writer
+	
+	#IMPORTANT
+	#make sure that the indexes of proc_text_list, X and labels all have same indexes
+	#think they do because they share similarity between same clusters
+
+
+
+	tuple_array = []
+
+	for i in range(len(labels)):
+		tuple_array.append([text_list[i], labels[i]])#used to used proc_text_list
+
+	#print tuple array
+	for i in range(len(tuple_array)):
+		#checking both parts of tuple because I saw some "reversing" for some reason
+		if(tuple_array[i][0] != -1 and tuple_array[i][1] != -1):
+			
+			#save clusters here
+			file_name = my_path+"/clusters/"+str(tuple_array[i][1])+".csv"
+			file = open(file_name, "a")
+			writer = csv.writer(file, delimiter = ',')
+			writer.writerow([tuple_array[i][0], tuple_array[i][1]])
+
+			#looking for x
+			x = 0
+			if(tuple_array[i][0] == x or tuple_array[i][1] == x):
+				print(tuple_array[i])
+			
+				print("\n\n")
+
+
+	#saves off the clusters
+	#name of dir will be the incoming target_xlsx
+	#csvs will be named after clusters
+
+
 
 
 #simple, fast way to stem/process text
@@ -99,22 +146,23 @@ def process_text(text):
 
 	new_words = []
 
+	#need to remove punctuation to avoid clustering based on punc similarity
+
 	for word in words:
 		#stem word
 		new_word = isri.stem(word)
 		#print("."+new_word+".")
 
 		#dont append if stemming turns it into whitespace/""
-		if new_word != "":
-			new_words.append(new_word)
+		#due to need to keep indexes parallel, appending all even if whitespace
+		# if new_word != "":
+		# 	new_words.append(new_word)
+		new_words.append(new_word)
 
 	#return this
 	new_text = ' '.join(new_words)
 
 	return new_text
-
-
-
 
 main()
 
